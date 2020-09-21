@@ -52,7 +52,7 @@ impl SmolStr {
     ///
     /// Panics if `text.len() > 22`.
     #[inline]
-    pub const fn new_inline(text: &str) -> SmolStr {
+    pub fn new_inline(text: &str) -> SmolStr {
         let mut buf = [0; INLINE_CAP];
         let mut i = 0;
         while i < text.len() {
