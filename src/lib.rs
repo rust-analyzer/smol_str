@@ -55,8 +55,9 @@ impl SmolStr {
     pub const fn new_inline(text: &str) -> SmolStr {
         let mut buf = [0; INLINE_CAP];
         let mut i = 0;
+        let bytes = text.as_bytes();
         while i < text.len() {
-            buf[i] = text.as_bytes()[i];
+            buf[i] = bytes[i];
             i += 1
         }
         SmolStr(Repr::Inline {
