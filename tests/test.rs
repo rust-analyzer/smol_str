@@ -21,7 +21,7 @@ fn assert_traits() {
 #[cfg(all(feature = "std", feature = "nosync"))]
 #[test]
 fn assert_traits() {
-    fn f<T: Send + ::std::fmt::Debug + Clone>() {}
+    fn f<T: ::std::fmt::Debug + Clone>() {}
     f::<SmolStr>();
 }
 
