@@ -21,6 +21,16 @@ languages. Strings consisting of a series of newlines, followed by a series of
 whitespace are a typical pattern in computer programs because of indentation.
 Note that a specialized interner might be a better solution for some use cases.
 
+## Cargo features
+
+- `std` (on by default): use the Rust standard library.
+    Disable for `no_std` mode.
+
+- `derive`: implement Serde traits for `SmolStr`.
+
+- `nosync`: use `Rc` internally instead of `Arc`. This makes the `SmolStr` type 
+    more performant in single-threaded contexts, but it will not be `Send` or `Sync`.
+
 ## MSRV Policy
 
 Minimal Supported Rust Version: latest stable.
