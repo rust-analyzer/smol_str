@@ -34,8 +34,18 @@ fn try_main() -> Result<()> {
     }
 
     {
+        let _s = Section::new("BUILD_ONLY_DEFAULT_FEATURES");
+        shell("cargo test --workspace --no-run")?;
+    }
+
+    {
         let _s = Section::new("TEST");
         shell("cargo test --all-features --workspace")?;
+    }
+
+    {
+        let _s = Section::new("TEST_ONLY_DEFAULT_FEATURES");
+        shell("cargo test --workspace")?;
     }
 
     let current_branch = shell_output("git branch --show-current")?;

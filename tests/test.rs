@@ -11,9 +11,17 @@ fn smol_str_is_smol() {
     );
 }
 
+#[cfg(all(feature = "std", not(feature = "nosync")))]
 #[test]
 fn assert_traits() {
     fn f<T: Send + Sync + ::std::fmt::Debug + Clone>() {}
+    f::<SmolStr>();
+}
+
+#[cfg(all(feature = "std", feature = "nosync"))]
+#[test]
+fn assert_traits() {
+    fn f<T: Send + ::std::fmt::Debug + Clone>() {}
     f::<SmolStr>();
 }
 

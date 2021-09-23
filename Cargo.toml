@@ -18,4 +18,5 @@ serde =  { version = "1", features = [ "derive" ] }
 
 [features]
 default = ["std"]
+nosync = []
 std = ["serde/std"]

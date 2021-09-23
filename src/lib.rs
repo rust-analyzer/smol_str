@@ -14,13 +14,19 @@ use std::{
 };
 
 #[cfg(not(feature = "std"))]
-use alloc::{
-    string::{String, ToString},
-    sync::Arc,
-};
+use alloc::string::{String, ToString};
 
-#[cfg(feature = "std")]
+#[cfg(all(not(feature = "std"), not(feature = "nosync")))]
+use alloc::sync::Arc;
+
+#[cfg(all(not(feature = "std"), feature = "nosync"))]
+use alloc::sync::Rc as Arc;
+
+#[cfg(all(feature = "std", not(feature = "nosync")))]
 use std::sync::Arc;
+
+#[cfg(all(feature = "std", feature = "nosync"))]
+use std::rc::Rc as Arc;
 
 /// A `SmolStr` is a string type that has the following properties:
 ///
