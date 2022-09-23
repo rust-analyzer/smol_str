@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 extern crate alloc;
 
 use alloc::{
@@ -307,6 +307,13 @@ impl From<SmolStr> for String {
 impl Borrow<str> for SmolStr {
     fn borrow(&self) -> &str {
         self.as_str()
+    }
+}
+
+#[cfg(feature = "std")]
+impl AsRef<std::ffi::OsStr> for SmolStr {
+    fn as_ref(&self) -> &std::ffi::OsStr {
+        (&**self).as_ref()
     }
 }
 
