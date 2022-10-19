@@ -1,10 +1,7 @@
 #![no_std]
 extern crate alloc;
 
-use alloc::{
-    string::{String, ToString},
-    sync::Arc,
-};
+use alloc::{string::String, sync::Arc};
 use core::{
     borrow::Borrow,
     cmp::{self, Ordering},
@@ -85,11 +82,6 @@ impl SmolStr {
     #[inline(always)]
     pub fn as_str(&self) -> &str {
         self.0.as_str()
-    }
-
-    #[inline(always)]
-    pub fn to_string(&self) -> String {
-        self.as_str().to_string()
     }
 
     #[inline(always)]
