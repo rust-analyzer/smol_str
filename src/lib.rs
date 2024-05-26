@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 extern crate alloc;
 
 use alloc::{borrow::Cow, boxed::Box, string::String, sync::Arc};
@@ -11,6 +11,9 @@ use core::{
     ops::Deref,
     str::FromStr,
 };
+
+#[cfg(feature = "revision")]
+mod revision;
 
 /// A `SmolStr` is a string type that has the following properties:
 ///

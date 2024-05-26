@@ -330,3 +330,32 @@ mod test_str_ext {
         assert!(!result.is_heap_allocated());
     }
 }
+
+#[cfg(feature = "bincode")]
+mod bincode_test {
+    use crate::SmolStr;
+
+    #[test]
+    fn test_smol_str_bincode() {
+        let val = SmolStr::new("this is a test");
+        let bincoded = bincode::serialize(&val).unwrap();
+        let decoded: SmolStr = bincode::deserialize(&bincoded[..]).unwrap();
+        assert_eq!(val, decoded);
+    }
+}
+
+#[cfg(feature = "revision")]
+mod revision_test {
+    use crate::SmolStr;
+    use revision::Revisioned;
+
+    #[test]
+    fn test_smol_str_revision() {
+        let val = SmolStr::new("this is a test");
+        let mut mem: Vec<u8> = vec![];
+        val.serialize_revisioned(&mut mem).unwrap();
+        assert_eq!(mem.len(), 15);
+        let out = <SmolStr as Revisioned>::deserialize_revisioned(&mut mem.as_slice()).unwrap();
+        assert_eq!(val, out);
+    }
+}
