@@ -3,7 +3,7 @@
 
 extern crate alloc;
 
-use alloc::{borrow::Cow, boxed::Box, string::String, sync::Arc};
+use alloc::{borrow::Cow, boxed::Box, string::String};
 use core::{
     borrow::Borrow,
     cmp::{self, Ordering},
@@ -11,6 +11,12 @@ use core::{
     fmt, hash, iter, mem, ops,
     str::FromStr,
 };
+
+#[cfg(feature = "portable-atomic")]
+use portable_atomic_util::Arc;
+
+#[cfg(not(feature = "portable-atomic"))]
+use alloc::sync::Arc;
 
 /// A `SmolStr` is a string type that has the following properties:
 ///
