@@ -12,11 +12,16 @@ use core::{
     str::FromStr,
 };
 
-#[cfg(feature = "portable-atomic")]
+#[cfg(all(not(target_has_atomic = "ptr"), feature = "portable-atomic"))]
 use portable_atomic_util::Arc;
 
-#[cfg(not(feature = "portable-atomic"))]
+#[cfg(target_has_atomic = "ptr")]
 use alloc::sync::Arc;
+
+#[cfg(all(not(target_has_atomic = "ptr"), not(feature = "portable-atomic")))]
+compile_error!(
+    "Targets without support for atomic pointers must enable the `portable-atomic` feature"
+);
 
 /// A `SmolStr` is a string type that has the following properties:
 ///
@@ -383,9 +388,19 @@ impl From<Box<str>> for SmolStr {
     }
 }
 
-impl From<Arc<str>> for SmolStr {
+#[cfg(target_has_atomic = "ptr")]
+impl From<alloc::sync::Arc<str>> for SmolStr {
     #[inline]
-    fn from(s: Arc<str>) -> SmolStr {
+    fn from(s: alloc::sync::Arc<str>) -> SmolStr {
+        let repr = Repr::new_on_stack(s.as_ref()).unwrap_or_else(|| Repr::Heap(s));
+        Self(repr)
+    }
+}
+
+#[cfg(all(not(target_has_atomic = "ptr"), feature = "portable-atomic"))]
+impl From<portable_atomic_util::Arc<str>> for SmolStr {
+    #[inline]
+    fn from(s: portable_atomic_util::Arc<str>) -> SmolStr {
         let repr = Repr::new_on_stack(s.as_ref()).unwrap_or_else(|| Repr::Heap(s));
         Self(repr)
     }
@@ -398,11 +413,23 @@ impl<'a> From<Cow<'a, str>> for SmolStr {
     }
 }
 
-impl From<SmolStr> for Arc<str> {
+#[cfg(target_has_atomic = "ptr")]
+impl From<SmolStr> for alloc::sync::Arc<str> {
     #[inline(always)]
     fn from(text: SmolStr) -> Self {
         match text.0 {
             Repr::Heap(data) => data,
+            _ => text.as_str().into(),
+        }
+    }
+}
+
+#[cfg(all(not(target_has_atomic = "ptr"), feature = "portable-atomic"))]
+impl From<SmolStr> for portable_atomic_util::Arc<str> {
+    #[inline(always)]
+    fn from(text: SmolStr) -> Self {
+        match text.0 {
+            Repr::Heap(data) => data.into(),
             _ => text.as_str().into(),
         }
     }
