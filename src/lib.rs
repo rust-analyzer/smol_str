@@ -12,16 +12,17 @@ use core::{
     str::FromStr,
 };
 
-#[cfg(all(not(target_has_atomic = "ptr"), feature = "portable-atomic"))]
-use portable_atomic_util::Arc;
-
 #[cfg(target_has_atomic = "ptr")]
 use alloc::sync::Arc;
 
+#[cfg(target_has_atomic = "ptr")]
+type HeapPtr<T> = Arc<T>;
+
+#[cfg(all(not(target_has_atomic = "ptr"), feature = "portable-atomic"))]
+type HeapPtr<T> = portable_atomic_util::Arc<T>;
+
 #[cfg(all(not(target_has_atomic = "ptr"), not(feature = "portable-atomic")))]
-compile_error!(
-    "Targets without support for atomic pointers must enable the `portable-atomic` feature"
-);
+type HeapPtr<T> = alloc::boxed::Box<T>;
 
 /// A `SmolStr` is a string type that has the following properties:
 ///
@@ -388,6 +389,7 @@ impl From<Box<str>> for SmolStr {
     }
 }
 
+#[cfg(target_has_atomic = "ptr")]
 impl From<Arc<str>> for SmolStr {
     #[inline]
     fn from(s: Arc<str>) -> SmolStr {
@@ -403,6 +405,7 @@ impl<'a> From<Cow<'a, str>> for SmolStr {
     }
 }
 
+#[cfg(target_has_atomic = "ptr")]
 impl From<SmolStr> for Arc<str> {
     #[inline(always)]
     fn from(text: SmolStr) -> Self {
@@ -494,7 +497,7 @@ enum Repr {
         buf: [u8; INLINE_CAP],
     },
     Static(&'static str),
-    Heap(Arc<str>),
+    Heap(HeapPtr<str>),
 }
 
 impl Repr {
@@ -535,7 +538,7 @@ impl Repr {
     }
 
     fn new(text: &str) -> Self {
-        Self::new_on_stack(text).unwrap_or_else(|| Repr::Heap(Arc::from(text)))
+        Self::new_on_stack(text).unwrap_or_else(|| Repr::Heap(HeapPtr::from(text)))
     }
 
     #[inline(always)]
@@ -573,7 +576,8 @@ impl Repr {
 
     fn ptr_eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Self::Heap(l0), Self::Heap(r0)) => Arc::ptr_eq(l0, r0),
+            #[cfg(any(target_has_atomic = "ptr", feature = "portable-atomic"))]
+            (Self::Heap(l0), Self::Heap(r0)) => HeapPtr::ptr_eq(l0, r0),
             (Self::Static(l0), Self::Static(r0)) => core::ptr::eq(l0, r0),
             (
                 Self::Inline {
