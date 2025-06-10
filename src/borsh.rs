@@ -2,7 +2,7 @@ use crate::{Repr, SmolStr, INLINE_CAP};
 use alloc::string::{String, ToString};
 use borsh::io::{Error, ErrorKind, Read, Write};
 use borsh::{BorshDeserialize, BorshSerialize};
-use core::intrinsics::transmute;
+use core::mem::transmute;
 
 impl BorshSerialize for SmolStr {
     fn serialize<W: Write>(&self, writer: &mut W) -> borsh::io::Result<()> {
