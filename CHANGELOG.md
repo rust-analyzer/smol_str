@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Optimise `StrExt::replace_smolstr`, `StrExt::replacen_smolstr` for single ascii replace.
+  ~3x speedup inline, ~1.8x for heap (len=50).
+
 ## 0.3.2 - 2024-10-23
 
 - Fix `SmolStrBuilder::push` incorrectly padding null bytes when spilling onto the heap on a
