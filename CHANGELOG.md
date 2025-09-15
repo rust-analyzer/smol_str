@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Optimise `StrExt::replace_smolstr`, `StrExt::replacen_smolstr` for single ascii replace.
-  ~3.7x speedup inline, ~2.4x for heap.
+- Optimise `StrExt::replace_smolstr`, `StrExt::replacen_smolstr` for single ascii replace,
+  ~3x speedup inline & heap.
 
 ## 0.3.2 - 2024-10-23
 
