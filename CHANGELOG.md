@@ -4,6 +4,8 @@
 
 - Optimise `StrExt::replace_smolstr`, `StrExt::replacen_smolstr` for single ascii replace,
   ~3x speedup inline & heap.
+- Optimise `StrExt::to_ascii_lowercase_smolstr`, `StrExt::to_ascii_uppercase_smolstr` 
+  ~2x speedup inline, ~4-22x for heap.
 
 ## 0.3.2 - 2024-10-23
 
