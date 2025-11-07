@@ -105,6 +105,77 @@ fn replace_bench(c: &mut Criterion) {
     }
 }
 
+fn from_utf8_lossy_bench(c: &mut Criterion) {
+    let mut group = c.benchmark_group("from_utf8_lossy");
+
+    for len in TEST_LENS {
+        // Valid UTF-8
+        let valid_bytes = Alphanumeric
+            .sample_string(&mut rand::rng(), len)
+            .into_bytes();
+        group.bench_with_input(
+            format!("SmolStr_valid_len={}", len),
+            &valid_bytes,
+            |b, bytes| {
+                b.iter(|| SmolStr::from_utf8_lossy(black_box(bytes)));
+            },
+        );
+        group.bench_with_input(
+            format!("String_valid_len={}", len),
+            &valid_bytes,
+            |b, bytes| {
+                b.iter(|| String::from_utf8_lossy(black_box(bytes)));
+            },
+        );
+
+        // Invalid UTF-8 (single invalid byte)
+        let mut invalid_bytes_single = Alphanumeric
+            .sample_string(&mut rand::rng(), len - 1)
+            .into_bytes();
+        invalid_bytes_single.push(0xFF);
+        group.bench_with_input(
+            format!("SmolStr_invalid_single_len={}", len),
+            &invalid_bytes_single,
+            |b, bytes| {
+                b.iter(|| SmolStr::from_utf8_lossy(black_box(bytes)));
+            },
+        );
+        group.bench_with_input(
+            format!("String_invalid_single_len={}", len),
+            &invalid_bytes_single,
+            |b, bytes| {
+                b.iter(|| String::from_utf8_lossy(black_box(bytes)));
+            },
+        );
+
+        // Invalid UTF-8 (many invalid bytes)
+        let mut invalid_bytes_many = Vec::with_capacity(len);
+        for i in 0..len {
+            if i % 5 == 0 {
+                invalid_bytes_many.push(0xFF); // Invalid byte
+            } else {
+                invalid_bytes_many
+                    .push(Alphanumeric.sample_string(&mut rand::rng(), 1).as_bytes()[0]);
+            }
+        }
+        group.bench_with_input(
+            format!("SmolStr_invalid_many_len={}", len),
+            &invalid_bytes_many,
+            |b, bytes| {
+                b.iter(|| SmolStr::from_utf8_lossy(black_box(bytes)));
+            },
+        );
+        group.bench_with_input(
+            format!("String_invalid_many_len={}", len),
+            &invalid_bytes_many,
+            |b, bytes| {
+                b.iter(|| String::from_utf8_lossy(black_box(bytes)));
+            },
+        );
+    }
+    group.finish();
+}
+
 criterion_group!(
     benches,
     format_bench,
@@ -114,5 +185,6 @@ criterion_group!(
     to_lowercase_bench,
     to_ascii_lowercase_bench,
     replace_bench,
+    from_utf8_lossy_bench,
 );
 criterion_main!(benches);

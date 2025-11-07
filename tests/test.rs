@@ -449,3 +449,66 @@ mod borsh_tests {
         assert!(result.is_err());
     }
 }
+
+#[cfg(test)]
+mod test_from_utf8_lossy {
+    use super::*;
+
+    #[test]
+    fn test_valid_utf8_inline() {
+        let bytes = b"Hello, world!";
+        let smol_str = SmolStr::from_utf8_lossy(bytes);
+        assert_eq!(smol_str, "Hello, world!");
+        assert!(!smol_str.is_heap_allocated());
+    }
+
+    #[test]
+    fn test_valid_utf8_heap() {
+        let long_string = "a".repeat(100);
+        let bytes = long_string.as_bytes();
+        let smol_str = SmolStr::from_utf8_lossy(bytes);
+        assert_eq!(smol_str, long_string);
+        assert!(smol_str.is_heap_allocated());
+    }
+
+    #[test]
+    fn test_invalid_utf8_inline() {
+        let bytes = &[0xFF, 0xFE, 0xFD]; // Invalid UTF-8
+        let smol_str = SmolStr::from_utf8_lossy(bytes);
+        assert_eq!(smol_str, "\u{fffd}\u{fffd}\u{fffd}");
+        assert!(!smol_str.is_heap_allocated());
+    }
+
+    #[test]
+    fn test_invalid_utf8_heap() {
+        let mut invalid_bytes = Vec::new();
+        invalid_bytes.extend_from_slice(b"Hello");
+        invalid_bytes.push(0xFF);
+        invalid_bytes.extend_from_slice(b"world");
+        invalid_bytes.push(0xFE);
+        invalid_bytes.extend_from_slice(&vec![0x80; 50]); // More invalid bytes to force heap allocation
+
+        let smol_str = SmolStr::from_utf8_lossy(&invalid_bytes);
+        assert_eq!(
+            smol_str,
+            String::from("Hello\u{fffd}world\u{fffd}") + &"\u{fffd}".repeat(50)
+        );
+        assert!(smol_str.is_heap_allocated());
+    }
+
+    #[test]
+    fn test_empty_bytes() {
+        let bytes = b"";
+        let smol_str = SmolStr::from_utf8_lossy(bytes);
+        assert_eq!(smol_str, "");
+        assert!(!smol_str.is_heap_allocated());
+    }
+
+    #[test]
+    fn test_mixed_valid_and_invalid() {
+        let bytes = &[0x41, 0x42, 0xC3, 0x28, 0x43]; // AB, invalid, C
+        let smol_str = SmolStr::from_utf8_lossy(bytes);
+        assert_eq!(smol_str, "AB\u{fffd}(C");
+        assert!(!smol_str.is_heap_allocated());
+    }
+}
