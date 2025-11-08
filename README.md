@@ -1,9 +1,11 @@
+> [!IMPORTANT]
+> This crate now lives in https://github.com/rust-lang/rust-analyzer/tree/master/lib/smol_str
+
 # smol_str
 
 [![CI](https://github.com/rust-analyzer/smol_str/workflows/CI/badge.svg)](https://github.com/rust-analyzer/smol_str/actions?query=branch%3Amaster+workflow%3ACI)
 [![Crates.io](https://img.shields.io/crates/v/smol_str.svg)](https://crates.io/crates/smol_str)
 [![API reference](https://docs.rs/smol_str/badge.svg)](https://docs.rs/smol_str/)
-
 
 A `SmolStr` is a string type that has the following properties:
 
